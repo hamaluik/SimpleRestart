@@ -1,0 +1,21 @@
+name: SimpleRestart
+main: com.hamaluik.SimpleRestart.SimpleRestart
+version: 1.0.0
+author: FuzzyWuzzie
+softdepend: [Permissions]
+commands:
+   restart:
+      description: restart the server!
+      usage: |
+            usage:
+                /restart now
+   reboot:
+      description: restart the server!
+      usage: |
+            usage:
+                /reboot now
+   memory:
+      description: gives memory usage information
+      usage: |
+            usage:
+                /memory
