@@ -1,0 +1,83 @@
+= SimpleRestart =
+Version 1.0.0 (Initial release) by FuzzyWuzzie!
+
+== Description ==
+SimpleRestart is a plugin for Bukkit (a Minecraft server wrapper) which allows server
+operators to simply and easily reboot their server, as well as schedule automatic reboots
+of the server "for freshness". The plugin contains flexible yet straightforward commands,
+is easy to set up and use, and makes use of Permissions.
+
+== Setting Up ==
+Simply copy SimpleRestart.jar and the SimpleRestart folder into the "plugins" subdirectory
+of your minecraft server. If you do not copy in the SimpleRestart folder, it will be created
+for you automatically, along with a default configuration file. Edit the configuration file
+(config.yml) as you see fit, then modify your server startup script so that it automatically
+reboots the server when it gets "/stop"ped.
+
+=== The Configuration File ===
+The default configuration file is mostly straight forward and contains numerous comments.
+However, each option is detailed below:
+	* auto-restart: enable / disable automatic, time-scheduled restarting. If this is set
+	  to "no" then the server will only ever restart when using the "/restart" command.
+	* auto-restart-interval: this is how often (in hours) the server will automatically
+	  restart itself (only if auto-restart is set to "yes")
+	* warn-time: Before the server restarts, it will send out a friendly warning to all
+	  connected players, this setting describes the amount of time (in minutes) before the
+	  server automatically reboots that players are warned.
+	* warning-message: this is the message that will be displayed as a warning that the
+	  server will be restarting soon. You may use classic minecraft server colour codes
+	  (http://www.minecraftwiki.net/wiki/Classic_server_protocol#Color_Codes) and "%t"%
+	  to indicate how long before the server reboots. For example:
+		warning-message: "&cServer will be restarting in %t minutes!"
+	  will display "Server will be restarting in 5 minutes!" in red (with warn-time = 5)
+	* restart-message: this is the message that players will see when they are kicked
+	  from the server due to the automatic reboot. Again, colour codes can be used here.
+
+=== Editing Your Startup Script ===
+In order for this plugin to work properly, you will have to make a slight modification to
+your startup script (Server.bat on windows, minecraft.sh on Linux). This plugin works by
+simply scheduling regular "stops" of the server. Then when the server goes down, the
+startup script simply loops around and starts the server up again, with minimal mumbo-jumbo.
+
+This is accomplished in the startup scripts using infinite loops:
+	* For Windows, put ":start" on the line before what you want repeated, then "goto start"
+	  on the line after what you want repeated to make an infinite loop. Example Server.bat:
+			@ECHO OFF
+			SET BINDIR=%~dp0
+			CD /D "%BINDIR%"
+			:start
+			"%ProgramFiles%\Java\jre6\bin\java.exe" -Xincgc -Xmx1G -jar craftbukkit-0.0.1-SNAPSHOT.jar
+			goto start
+	* For Linux, put "while true" <new line> "do" on the lines before what you want repeated,
+	  and "done" on the line after to make an infinite loop. Example minecraft.sh:
+			#!/bin/sh
+			BINDIR="\$(dirname "\$(readlink -fn "\$0")")"
+			cd "\$BINDIR"
+			while true
+			do
+				java -Xincgc -Xmx1G -jar craftbukkit-0.0.1-SNAPSHOT.jar
+			done
+			
+On Windows, to exit this infinite loop (i.e., take the server down for good), simply close the
+command window. On Linux, press "Ctrl+C" to cancel the process.
+
+== Permissions Nodes ==
+To use anything in the /restart or /reboot commands, users must have the permission "simplerestart.restart"
+To use the /memory command, users must have the permission "simplerestart.memory"
+
+== Commands ==
+(all commands may be typed in the console (without the "/" of course) or by players in-game)
+(/restart and /reboot are synonyms for each other and can be used interchangeably)
+	* /restart help: gives a simple help menu
+	* /restart now: restarts the server immediately
+	* /restart time: informs you how much time is left before the server restarts
+	* /restart (h|m|s) <time>: turns automatic restarting on (if it was off) and reschedules the next
+		automatic restart to be <time> (hours, minutes, or seconds) away from now. For example,
+		to reboot the server in 15 minutes, use "/restart m 15". 'h' is for hours, 'm' is for minutes,
+		and 's' is for seconds.
+	* /restart on: turns automatic restarting on (if disabled in configuration OR via
+		commands. Will start the scheduler from the current time based on the settings
+		in the configuration.
+	* /restart off: cancels any pending automatic restarts and prevents automatic restarts
+		from happening until re-enabled
+	* /memory: displays the java runtime memory usage, useful for catching runaway plugins
