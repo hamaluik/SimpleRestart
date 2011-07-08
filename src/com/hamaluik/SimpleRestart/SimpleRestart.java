@@ -3,7 +3,7 @@ package com.hamaluik.SimpleRestart;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
+//import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
@@ -218,9 +218,9 @@ public class SimpleRestart extends JavaPlugin {
             this.getServer().dispatchCommand(ms.console, "stop");
             
             // GET PID OF CURRENT JAVA PROCESS
-            String PID = ManagementFactory.getRuntimeMXBean().getName();
+            //String PID = ManagementFactory.getRuntimeMXBean().getName();
             // ASYNCHRONOUSLY LAUNCH EXTERNAL PROCESS
-            java.lang.Runtime.getRuntime().exec("sh /home/mcnsa/restart.sh " + PID.split("@")[0]);
+            //java.lang.Runtime.getRuntime().exec("sh /home/mcnsa/restart.sh " + PID.split("@")[0]);
             
 		} catch (Exception e) {
 			log.info("[SimpleRestart] Something went wrong!");
