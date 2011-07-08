@@ -219,9 +219,8 @@ public class SimpleRestart extends JavaPlugin {
             
             // GET PID OF CURRENT JAVA PROCESS
             String PID = ManagementFactory.getRuntimeMXBean().getName();
-            log.info("PID: " + PID);
             // ASYNCHRONOUSLY LAUNCH EXTERNAL PROCESS
-            java.lang.Runtime.getRuntime().exec("C:\\Program Files (x86)\\Notepad++\\notepad++.exe");
+            java.lang.Runtime.getRuntime().exec("sh /home/mcnsa/restart.sh " + PID.split("@")[0]);
             
 		} catch (Exception e) {
 			log.info("[SimpleRestart] Something went wrong!");
