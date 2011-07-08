@@ -16,18 +16,18 @@ public class SimpleRestartCommandListener implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if(label.equalsIgnoreCase("restart") || label.equalsIgnoreCase("reboot")) {
-			// first, make sure they have permission to deal with restart
-			if(sender instanceof Player) {
-				// only if they're a player
-				if(!plugin.hasPermission((Player)sender, "simplerestart.restart")) {
-					// no permission!
-					plugin.returnMessage(sender, "&cYou don't have permission to do that!");
-					return true;
-				}
-			}
-			
+		if(label.equalsIgnoreCase("restart") || label.equalsIgnoreCase("reboot")) {			
 			if(args.length == 1 && args[0].equalsIgnoreCase("now")) {
+				// make sure they have appropriate permission
+				if(sender instanceof Player) {
+					// only if they're a player
+					if(!plugin.hasPermission((Player)sender, "simplerestart.restart")) {
+						// no permission!
+						plugin.returnMessage(sender, "&cYou don't have permission to do that!");
+						return true;
+					}
+				}
+				
 				// restarting NOW
 				plugin.returnMessage(sender, "&cOk, you asked for it!");
 				plugin.stopServer();
@@ -35,6 +35,16 @@ public class SimpleRestartCommandListener implements CommandExecutor {
 			}
 			else if(args.length == 1 && args[0].equalsIgnoreCase("time")) {
 				// report the amount of time before the next restart
+				// make sure they have appropriate permission
+				if(sender instanceof Player) {
+					// only if they're a player
+					if(!plugin.hasPermission((Player)sender, "simplerestart.time")) {
+						// no permission!
+						plugin.returnMessage(sender, "&cYou don't have permission to do that!");
+						return true;
+					}
+				}
+				
 				
 				if(!plugin.autoRestart) {
 					// make sure there IS an auto-restart
@@ -54,11 +64,31 @@ public class SimpleRestartCommandListener implements CommandExecutor {
 				return true;
 			}
 			else if(args.length == 1 && args[0].equalsIgnoreCase("help")) {
+				// make sure they have appropriate permission
+				if(sender instanceof Player) {
+					// only if they're a player
+					if(!plugin.hasPermission((Player)sender, "simplerestart.restart")) {
+						// no permission!
+						plugin.returnMessage(sender, "&cYou don't have permission to do that!");
+						return true;
+					}
+				}
+				
 				// show help!
 				showHelp(sender);
 				return true;
 			}
 			else if(args.length == 1 && args[0].equalsIgnoreCase("on")) {
+				// make sure they have appropriate permission
+				if(sender instanceof Player) {
+					// only if they're a player
+					if(!plugin.hasPermission((Player)sender, "simplerestart.restart")) {
+						// no permission!
+						plugin.returnMessage(sender, "&cYou don't have permission to do that!");
+						return true;
+					}
+				}
+				
 				// only if we're not already auto-restarting
 				if(plugin.autoRestart) {
 					plugin.returnMessage(sender, "&cThe server was already automatically restarting!");
@@ -108,6 +138,16 @@ public class SimpleRestartCommandListener implements CommandExecutor {
 				return true;
 			}
 			else if(args.length == 1 && args[0].equalsIgnoreCase("off")) {
+				// make sure they have appropriate permission
+				if(sender instanceof Player) {
+					// only if they're a player
+					if(!plugin.hasPermission((Player)sender, "simplerestart.restart")) {
+						// no permission!
+						plugin.returnMessage(sender, "&cYou don't have permission to do that!");
+						return true;
+					}
+				}
+				
 				// only if we're not already auto-restarting
 				if(!plugin.autoRestart) {
 					plugin.returnMessage(sender, "&cThe server already wasn't automatically restarting!");
@@ -129,6 +169,16 @@ public class SimpleRestartCommandListener implements CommandExecutor {
 			else if(args.length == 2) {
 				// restarting in a set time
 				// note: doing it this way DOES NOT give a restart warning
+				// make sure they have appropriate permission
+				if(sender instanceof Player) {
+					// only if they're a player
+					if(!plugin.hasPermission((Player)sender, "simplerestart.restart")) {
+						// no permission!
+						plugin.returnMessage(sender, "&cYou don't have permission to do that!");
+						return true;
+					}
+				}
+				
 				
 				String timeFormat = args[0];
 				double timeAmount = 0;
