@@ -112,8 +112,8 @@ public class SimpleRestart extends JavaPlugin {
 				out.write("# must be > (warn-time / 60)\r\n");
 				out.write("auto-restart-interval: 8\r\n");
 				out.write("\r\n");
-				out.write("# warning time before reboot in minutes (decimal points ok -- ex: 2.5)\r\n");
-				out.write("warn-time: 5\r\n");
+				out.write("# warning times before reboot in minutes (decimal points ok -- ex: 2.5)\r\n");
+				out.write("warn-times: [10, 5, 2, 1]\r\n");
 				out.write("\r\n");
 				out.write("# what to tell players when warning about server reboot\r\n");
 				out.write("# CAN use minecraft classic server protocol colour codes\r\n");
