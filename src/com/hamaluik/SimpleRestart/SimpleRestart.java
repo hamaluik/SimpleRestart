@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 //import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.logging.Logger;
 
 import net.minecraft.server.MinecraftServer;
@@ -32,13 +33,11 @@ public class SimpleRestart extends JavaPlugin {
 	// options
 	boolean autoRestart = true;
 	double restartInterval = 1;
-	double warnTime = 5;
+	List<Double> warnTimes;
+	boolean delayUntilEmpty = false;
+	int maxPlayersConsideredEmpty = 0;
 	String warningMessage = new String("&cServer will be restarting in %t minutes!");
 	String restartMessage = new String("&cServer is restarting, we'll be right back!");
-	
-	// task ids
-	int remindTaskId = -1;
-	int restartTaskId = -1;
 	
 	// keep track of when we started the scheduler
 	// so that we know how much time is left
@@ -56,30 +55,7 @@ public class SimpleRestart extends JavaPlugin {
 		
 		// ok, now if we want to schedule a restart, do so!
 		if(autoRestart) {
-			log.info("[SimpleRestart] scheduling restart tasks...");
-			// schedule the warning task
-			// note: scheduled tasks need times in "server ticks"
-			// 1 server tick = 1/20th of a second
-			// so to get from seconds to ticks, x20
-			remindTaskId = getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-				public void run() {
-					// warn about the impending reboot
-					getServer().broadcastMessage(processColours(warningMessage.replaceAll("%t", "" + warnTime)));
-					plugin.log.info("[SimpleRestart] " + stripColours(warningMessage.replaceAll("%t", "" + warnTime)));
-					
-					// ok, now schedule the reboot task to be warn-time minutes later!
-					// this will get scheduled when the warning fires
-					restartTaskId = getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-						public void run() {
-							stopServer();
-						}
-					}, (long)(warnTime * 60.0 * 20.0));
-				}
-			}, (long)(((restartInterval * 60.0) - warnTime) * 60.0 * 20.0));
-			startTimestamp = System.currentTimeMillis();
-			// throw out some log messages
-			log.info("[SimpleRestart] warning scheduled for " + (long)(((restartInterval * 60.0) - warnTime) * 60.0) + " seconds from now!");
-			log.info("[SimpleRestart] reboot scheduled for " + (long)(warnTime * 60.0) + " seconds after that!");
+			scheduleTasks();
 		}
 		else {
 			log.info("[SimpleRestart] No automatic restarts scheduled!");
@@ -155,7 +131,7 @@ public class SimpleRestart extends JavaPlugin {
 		}
 	}
 
-	private void loadConfiguration() {
+	public void loadConfiguration() {
 		// make sure the config exists
 		// and if it doesn't, make it!
 		this.checkConfiguration();
@@ -164,7 +140,7 @@ public class SimpleRestart extends JavaPlugin {
 		Configuration config = getConfiguration();
 		this.autoRestart = config.getBoolean("auto-restart", true);
 		this.restartInterval = config.getDouble("auto-restart-interval", 8);
-		this.warnTime = config.getDouble("warn-time", 5);
+		this.warnTimes = config.getDoubleList("warn-times", null);
 		this.warningMessage = config.getString("warning-message", "&cServer will be restarting in %t minutes!");
 		this.restartMessage = config.getString("restart-message", "&cServer is restarting, we'll be right back!");
 	}
@@ -186,6 +162,41 @@ public class SimpleRestart extends JavaPlugin {
 		else {
 			sender.sendMessage(plugin.stripColours(message));
 		}
+	}
+	
+	void cancelTasks() {
+		plugin.getServer().getScheduler().cancelTasks(plugin);
+		plugin.autoRestart = false;
+	}
+	
+	void scheduleTasks() {
+		// start the warning tasks
+		for(int i = 0; i < warnTimes.size(); i++) {
+			if(restartInterval * 60 - warnTimes.get(i) > 0) {
+				// only do "positive" warning times
+				// start the warning task
+				final double warnTime = warnTimes.get(i);
+				getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+					public void run() {
+						getServer().broadcastMessage(processColours(warningMessage.replaceAll("%t", "" + warnTime)));
+						plugin.log.info("[SimpleRestart] " + stripColours(warningMessage.replaceAll("%t", "" + warnTime)));
+					}
+				}, (long)((restartInterval * 60 - warnTimes.get(i)) * 60.0 * 20.0));
+				
+				log.info("[SimpleRestart] warning scheduled for " + (long)((restartInterval * 60 - warnTimes.get(i)) * 60.0) + " seconds from now!");
+			}
+		}
+
+		// start the restart task
+		getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+			public void run() {
+				stopServer();
+			}
+		}, (long)(restartInterval * 3600.0 * 20.0));
+		
+		log.info("[SimpleRestart] reboot scheduled for " + (long)(restartInterval  * 3600.0) + " seconds from now!");
+		plugin.autoRestart = true;
+		plugin.startTimestamp = System.currentTimeMillis();
 	}
 	
 	// kick all players from the server

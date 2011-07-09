@@ -97,30 +97,10 @@ public class SimpleRestartCommandListener implements CommandExecutor {
 
 				// turn auto-restarts back on..
 				plugin.autoRestart = true;
+				plugin.log.info("[SimpleRestart] reloading configuration..");
+				plugin.loadConfiguration();
 				plugin.log.info("[SimpleRestart] scheduling restart tasks...");
-				// schedule the warning task
-				// note: scheduled tasks need times in "server ticks"
-				// 1 server tick = 1/20th of a second
-				// so to get from seconds to ticks, x20
-				plugin.remindTaskId = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-					public void run() {
-						// warn about the impending reboot
-						plugin.getServer().broadcastMessage(plugin.processColours(plugin.warningMessage.replaceAll("%t", "" + plugin.warnTime)));
-						plugin.log.info("[SimpleRestart] " + plugin.stripColours(plugin.warningMessage.replaceAll("%t", "" + plugin.warnTime)));
-						
-						// ok, now schedule the reboot task to be warn-time minutes later!
-						// this will get scheduled when the warning fires
-						plugin.restartTaskId = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-							public void run() {
-								plugin.stopServer();
-							}
-						}, (long)(plugin.warnTime * 60.0 * 20.0));
-					}
-				}, (long)(((plugin.restartInterval * 60.0) - plugin.warnTime) * 60.0 * 20.0));
-				plugin.startTimestamp = System.currentTimeMillis();
-				// throw out some log messages
-				plugin.log.info("[SimpleRestart] warning scheduled for " + (long)(((plugin.restartInterval * 60.0) - plugin.warnTime) * 60.0) + " seconds from now!");
-				plugin.log.info("[SimpleRestart] reboot scheduled for " + (long)(plugin.warnTime * 60.0) + " seconds after that!");
+				plugin.scheduleTasks();
 				
 				// and inform!
 				plugin.returnMessage(sender, "&bAutomatic restarts have been turned on!");
@@ -155,10 +135,7 @@ public class SimpleRestartCommandListener implements CommandExecutor {
 				}
 				
 				// ok, cancel all the tasks associated with this plugin!
-				plugin.getServer().getScheduler().cancelTasks(plugin);
-				plugin.autoRestart = false;
-				plugin.remindTaskId = -1;
-				plugin.restartTaskId = -1;
+				plugin.cancelTasks();
 				
 				// and inform!
 				plugin.returnMessage(sender, "&bAutomatic restarts have been turned off!");
@@ -214,30 +191,15 @@ public class SimpleRestartCommandListener implements CommandExecutor {
 				// if the scheduler is already going, cancel it!
 				if(plugin.autoRestart) {
 					// ok, cancel all the tasks associated with this plugin!
-					plugin.getServer().getScheduler().cancelTasks(plugin);
-					plugin.autoRestart = false;
-					plugin.remindTaskId = -1;
-					plugin.restartTaskId = -1;
+					plugin.cancelTasks();
 				}
 				
 				// and set the restart interval for /restart time
 				plugin.restartInterval = restartTime / 3600.0;
 				
 				// now, start it up again!
-				plugin.autoRestart = true;
 				plugin.log.info("[SimpleRestart] scheduling restart tasks...");
-				// schedule the warning task
-				// note: scheduled tasks need times in "server ticks"
-				// 1 server tick = 1/20th of a second
-				// so to get from seconds to ticks, x20
-				plugin.restartTaskId = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-					public void run() {
-						plugin.stopServer();
-					}
-				}, (long)(restartTime * 20.0));
-				plugin.startTimestamp = System.currentTimeMillis();
-				// throw out some log messages
-				plugin.log.info("[SimpleRestart] restart scheduled for " + (long)(restartTime) + " seconds from now!");
+				plugin.scheduleTasks();
 				
 				// and inform!
 				double timeLeft = (plugin.restartInterval * 3600) - ((double)(System.currentTimeMillis() - plugin.startTimestamp) / 1000);
