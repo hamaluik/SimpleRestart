@@ -1,5 +1,5 @@
 = SimpleRestart =
-Version 1.0.0 (Initial release) by FuzzyWuzzie!
+Version 1.1.0 by FuzzyWuzzie!
 
 == Description ==
 SimpleRestart is a plugin for Bukkit (a Minecraft server wrapper) which allows server
@@ -21,9 +21,12 @@ However, each option is detailed below:
 	  to "no" then the server will only ever restart when using the "/restart" command.
 	* auto-restart-interval: this is how often (in hours) the server will automatically
 	  restart itself (only if auto-restart is set to "yes")
-	* warn-time: Before the server restarts, it will send out a friendly warning to all
-	  connected players, this setting describes the amount of time (in minutes) before the
-	  server automatically reboots that players are warned.
+	* warn-times: Before the server restarts, it will send out a friendly warning to all
+	  connected players, this setting is a list that describes the amount of time (in minutes)
+	  before the server automatically reboots that players are warning. For example:
+	  warn-times: [10, 5, 2, 1]
+	  will warn players at 10 minutes, 5 minutes, 2 minutes, and 1 minute before the server
+	  reboots.
 	* warning-message: this is the message that will be displayed as a warning that the
 	  server will be restarting soon. You may use classic minecraft server colour codes
 	  (http://www.minecraftwiki.net/wiki/Classic_server_protocol#Color_Codes) and "%t"%
@@ -56,13 +59,36 @@ This is accomplished in the startup scripts using infinite loops:
 			while true
 			do
 				java -Xincgc -Xmx1G -jar craftbukkit-0.0.1-SNAPSHOT.jar
+				echo "If you want to completely stop the server process now, press Ctrl+C before the time is up!"
+				echo "Rebooting in:"
+				for i in 5 4 3 2 1
+				do
+					echo "$i..."
+					sleep 1
+				done
+				echo "Rebooting now!"
+			done
+	* If you are using screen on linux, you may use something like this:
+			#!/bin/bash
+			while true
+			do
+				screen -t "MinecraftServer" -S "MinecraftServer" bash -c 'java -Xms14000M -Xmx14000M -jar craftbukkit.jar nogui ; exit'
+				echo "If you want to completely stop the server process now, press Ctrl+C before the time is up!"
+				echo "Rebooting in:"
+				for i in 5 4 3 2 1
+				do
+					echo "$i..."
+					sleep 1
+				done
+				echo "Rebooting now!"
 			done
 			
 On Windows, to exit this infinite loop (i.e., take the server down for good), simply close the
-command window. On Linux, press "Ctrl+C" to cancel the process.
+command window. On Linux, stop the server then press "Ctrl+C" to cancel the process.
 
 == Permissions Nodes ==
-To use anything in the /restart or /reboot commands, users must have the permission "simplerestart.restart"
+To use just about anything in the /restart or /reboot commands, users must have the permission "simplerestart.restart"
+To use the /restart time command, users must have the permission "simplerestart.time"
 To use the /memory command, users must have the permission "simplerestart.memory"
 
 == Commands ==
@@ -81,3 +107,8 @@ To use the /memory command, users must have the permission "simplerestart.memory
 	* /restart off: cancels any pending automatic restarts and prevents automatic restarts
 		from happening until re-enabled
 	* /memory: displays the java runtime memory usage, useful for catching runaway plugins
+	
+== Changelog ==
+	* 1.1.0 Added multiple warnings and tidied up code a bit
+	* 1.0.1 Added forced auto-save before reboot and separate permissions node for checking how long before restart
+	* 1.0.0 Initial release
