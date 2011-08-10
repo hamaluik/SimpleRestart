@@ -1,5 +1,5 @@
 = SimpleRestart =
-Version 1.1.0 by FuzzyWuzzie!
+Version 1.2.0 by FuzzyWuzzie!
 
 == Description ==
 SimpleRestart is a plugin for Bukkit (a Minecraft server wrapper) which allows server
@@ -109,6 +109,8 @@ To use the /memory command, users must have the permission "simplerestart.memory
 	* /memory: displays the java runtime memory usage, useful for catching runaway plugins
 	
 == Changelog ==
+    * 1.2.0 Changed the scheduling system from Bukkit's internal scheduler (which gets delayed in the event of lag)
+            to Java timers, which should be server lag-proof.
 	* 1.1.0 Added multiple warnings and tidied up code a bit
 	* 1.0.1 Added forced auto-save before reboot and separate permissions node for checking how long before restart
 	* 1.0.0 Initial release

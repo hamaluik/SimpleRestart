@@ -4,14 +4,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 //import java.lang.management.ManagementFactory;
-import java.lang.reflect.Field;
+//import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 
-import net.minecraft.server.MinecraftServer;
-
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -39,6 +40,10 @@ public class SimpleRestart extends JavaPlugin {
 	String warningMessage = new String("&cServer will be restarting in %t minutes!");
 	String restartMessage = new String("&cServer is restarting, we'll be right back!");
 	
+	// timers
+	public ArrayList<Timer> warningTimers = new ArrayList<Timer>();
+	public Timer rebootTimer;
+	
 	// keep track of when we started the scheduler
 	// so that we know how much time is left
 	long startTimestamp;
@@ -64,6 +69,7 @@ public class SimpleRestart extends JavaPlugin {
 
 	// shutdown routine
 	public void onDisable() {
+		cancelTasks();
 		log.info("[SimpleRestart] plugin disabled");
 	}
 	
@@ -110,7 +116,7 @@ public class SimpleRestart extends JavaPlugin {
 				out.write("\r\n");
 				out.write("# in hours (decimal points ok -- ex: 2.5)\r\n");
 				out.write("# must be > (warn-time / 60)\r\n");
-				out.write("auto-restart-interval: 8\r\n");
+				out.write("auto-restart-interval: 4\r\n");
 				out.write("\r\n");
 				out.write("# warning times before reboot in minutes (decimal points ok -- ex: 2.5)\r\n");
 				out.write("warn-times: [10, 5, 2, 1]\r\n");
@@ -165,34 +171,56 @@ public class SimpleRestart extends JavaPlugin {
 	}
 	
 	void cancelTasks() {
-		plugin.getServer().getScheduler().cancelTasks(plugin);
+		//plugin.getServer().getScheduler().cancelTasks(plugin);
+		for(int i = 0; i < warningTimers.size(); i++) warningTimers.get(i).cancel();
+		warningTimers.clear();
+		if(rebootTimer != null) rebootTimer.cancel();
+		rebootTimer = new Timer();
 		plugin.autoRestart = false;
 	}
 	
 	void scheduleTasks() {
+		cancelTasks();
 		// start the warning tasks
 		for(int i = 0; i < warnTimes.size(); i++) {
 			if(restartInterval * 60 - warnTimes.get(i) > 0) {
 				// only do "positive" warning times
 				// start the warning task
 				final double warnTime = warnTimes.get(i);
-				getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+				/*getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 					public void run() {
 						getServer().broadcastMessage(processColours(warningMessage.replaceAll("%t", "" + warnTime)));
 						plugin.log.info("[SimpleRestart] " + stripColours(warningMessage.replaceAll("%t", "" + warnTime)));
 					}
 				}, (long)((restartInterval * 60 - warnTimes.get(i)) * 60.0 * 20.0));
 				
+				log.info("[SimpleRestart] warning scheduled for " + (long)((restartInterval * 60 - warnTimes.get(i)) * 60.0) + " seconds from now!");*/
+				Timer warnTimer = new Timer();
+				warningTimers.add(warnTimer);
+				warnTimer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						getServer().broadcastMessage(processColours(warningMessage.replaceAll("%t", "" + warnTime)));
+						plugin.log.info("[SimpleRestart] " + stripColours(warningMessage.replaceAll("%t", "" + warnTime)));
+					}
+				}, (long)((restartInterval * 60 - warnTimes.get(i)) * 60000.0));
 				log.info("[SimpleRestart] warning scheduled for " + (long)((restartInterval * 60 - warnTimes.get(i)) * 60.0) + " seconds from now!");
 			}
 		}
 
 		// start the restart task
-		getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+		/*getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			public void run() {
 				stopServer();
 			}
-		}, (long)(restartInterval * 3600.0 * 20.0));
+		}, (long)(restartInterval * 3600.0 * 20.0));*/
+		rebootTimer = new Timer();
+		rebootTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				stopServer();
+			}
+		}, (long)(restartInterval * 3600000.0));
 		
 		log.info("[SimpleRestart] reboot scheduled for " + (long)(restartInterval  * 3600.0) + " seconds from now!");
 		plugin.autoRestart = true;
@@ -220,13 +248,16 @@ public class SimpleRestart extends JavaPlugin {
 		log.info("[SimpleRestart] Restarting...");
 		clearServer();
 		try {
-            Field f;
+            /*Field f;
 			f = CraftServer.class.getDeclaredField("console");
             f.setAccessible(true);
             MinecraftServer ms = (MinecraftServer) f.get(this.getServer());
             // send the "stop" command as the console
             this.getServer().dispatchCommand(ms.console, "save-all");
-            this.getServer().dispatchCommand(ms.console, "stop");
+            this.getServer().dispatchCommand(ms.console, "stop");*/
+            ConsoleCommandSender sender = new ConsoleCommandSender(this.getServer());
+            this.getServer().dispatchCommand(sender, "save-all");
+            this.getServer().dispatchCommand(sender, "stop");
             
             // GET PID OF CURRENT JAVA PROCESS
             //String PID = ManagementFactory.getRuntimeMXBean().getName();
