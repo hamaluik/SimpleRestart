@@ -248,7 +248,6 @@ public class SimpleRestart extends JavaPlugin {
 		log.info("[SimpleRestart] Restarting...");
 		clearServer();
 		try {
-			File dataFolder = this.getDataFolder();
 			File file = new File(this.getDataFolder().getAbsolutePath() + File.separator + "restart.txt");
 			log.info("[SimpleRestart] Touching restart.txt at: " + file.getAbsolutePath());
 			if (file.exists()) {
