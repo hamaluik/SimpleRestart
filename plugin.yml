@@ -1,7 +1,7 @@
 name: SimpleRestart
 main: com.hamaluik.SimpleRestart.SimpleRestart
 version: 1.2.0
-author: FuzzyWuzzie
+author: FuzzyWuzzie, THExSYSTEM
 softdepend: [Permissions]
 commands:
    restart:

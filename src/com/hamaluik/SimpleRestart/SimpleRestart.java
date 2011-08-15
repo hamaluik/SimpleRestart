@@ -80,9 +80,9 @@ public class SimpleRestart extends JavaPlugin {
 		if(this.permissionHandler == null) {
 			if(permissionsPlugin != null) {
 				this.permissionHandler = ((Permissions)permissionsPlugin).getHandler();
-				log.info("[MCNSAChat] permissions successfully loaded");
+				log.info("[SimpleRestart] permissions successfully loaded");
 			} else {
-				log.info("[MCNSAChat] permission system not detected, defaulting to OP");
+				log.info("[SimpleRestart] permission system not detected, defaulting to OP");
 			}
 		}
 	}
@@ -248,6 +248,14 @@ public class SimpleRestart extends JavaPlugin {
 		log.info("[SimpleRestart] Restarting...");
 		clearServer();
 		try {
+			File dataFolder = this.getDataFolder();
+			File file = new File(this.getDataFolder().getAbsolutePath() + File.separator + "restart.txt");
+			log.info("[SimpleRestart] Touching restart.txt at: " + file.getAbsolutePath());
+			if (file.exists()) {
+				file.setLastModified(System.currentTimeMillis());
+			} else {
+				file.createNewFile();
+			}
             /*Field f;
 			f = CraftServer.class.getDeclaredField("console");
             f.setAccessible(true);
@@ -258,7 +266,7 @@ public class SimpleRestart extends JavaPlugin {
             ConsoleCommandSender sender = new ConsoleCommandSender(this.getServer());
             this.getServer().dispatchCommand(sender, "save-all");
             this.getServer().dispatchCommand(sender, "stop");
-            
+
             // GET PID OF CURRENT JAVA PROCESS
             //String PID = ManagementFactory.getRuntimeMXBean().getName();
             // ASYNCHRONOUSLY LAUNCH EXTERNAL PROCESS
