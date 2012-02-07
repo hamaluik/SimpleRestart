@@ -1,2 +1,4 @@
+.*
+*.sublime*
 bin
 lib

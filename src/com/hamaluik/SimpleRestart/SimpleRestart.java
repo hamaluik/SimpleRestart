@@ -3,8 +3,6 @@ package com.hamaluik.SimpleRestart;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-//import java.lang.management.ManagementFactory;
-//import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -12,11 +10,10 @@ import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
@@ -143,10 +140,10 @@ public class SimpleRestart extends JavaPlugin {
 		this.checkConfiguration();
 		
 		// ge the configuration..
-		Configuration config = getConfiguration();
+		FileConfiguration config = getConfig();
 		this.autoRestart = config.getBoolean("auto-restart", true);
 		this.restartInterval = config.getDouble("auto-restart-interval", 8);
-		this.warnTimes = config.getDoubleList("warn-times", null);
+		this.warnTimes = config.getDoubleList("warn-times");
 		this.warningMessage = config.getString("warning-message", "&cServer will be restarting in %t minutes!");
 		this.restartMessage = config.getString("restart-message", "&cServer is restarting, we'll be right back!");
 	}
@@ -255,24 +252,15 @@ public class SimpleRestart extends JavaPlugin {
 			} else {
 				file.createNewFile();
 			}
-            /*Field f;
-			f = CraftServer.class.getDeclaredField("console");
-            f.setAccessible(true);
-            MinecraftServer ms = (MinecraftServer) f.get(this.getServer());
-            // send the "stop" command as the console
-            this.getServer().dispatchCommand(ms.console, "save-all");
-            this.getServer().dispatchCommand(ms.console, "stop");*/
-            ConsoleCommandSender sender = new ConsoleCommandSender(this.getServer());
-            this.getServer().dispatchCommand(sender, "save-all");
-            this.getServer().dispatchCommand(sender, "stop");
-
-            // GET PID OF CURRENT JAVA PROCESS
-            //String PID = ManagementFactory.getRuntimeMXBean().getName();
-            // ASYNCHRONOUSLY LAUNCH EXTERNAL PROCESS
-            //java.lang.Runtime.getRuntime().exec("sh /home/mcnsa/restart.sh " + PID.split("@")[0]);
-            
 		} catch (Exception e) {
-			log.info("[SimpleRestart] Something went wrong!");
+			log.info("[SimpleRestart] Something went wrong while touching restart.txt!");
+			return false;
+		}
+		try {
+            this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "save-all");
+            this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "stop");
+		} catch (Exception e) {
+			log.info("[SimpleRestart] Something went wrong while saving & stoping!");
 			return false;
 		}
 		return true;

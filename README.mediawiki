@@ -1,5 +1,5 @@
 = SimpleRestart =
-Version 1.2.0 by FuzzyWuzzie!
+Version 1.3.0 by FuzzyWuzzie and THExSYSTEM
 
 == Description ==
 SimpleRestart is a plugin for Bukkit (a Minecraft server wrapper) which allows server
@@ -45,14 +45,17 @@ startup script simply loops around and starts the server up again, with minimal 
 This is accomplished in the startup scripts using infinite loops:
 	* For Windows, put ":start" on the line before what you want repeated, then "goto start"
 	  on the line after what you want repeated to make an infinite loop. Example Server.bat:
+<<code>>
 			@ECHO OFF
 			SET BINDIR=%~dp0
 			CD /D "%BINDIR%"
 			:start
 			"%ProgramFiles%\Java\jre6\bin\java.exe" -Xincgc -Xmx1G -jar craftbukkit-0.0.1-SNAPSHOT.jar
 			goto start
+<</code>>
 	* For Linux, put "while true" <new line> "do" on the lines before what you want repeated,
 	  and "done" on the line after to make an infinite loop. Example minecraft.sh:
+<<code>>
 			#!/bin/sh
 			BINDIR="\$(dirname "\$(readlink -fn "\$0")")"
 			cd "\$BINDIR"
@@ -68,7 +71,9 @@ This is accomplished in the startup scripts using infinite loops:
 				done
 				echo "Rebooting now!"
 			done
+<</code>>
 	* If you are using screen on linux, you may use something like this:
+<<code>>
 			#!/bin/bash
 			while true
 			do
@@ -82,14 +87,15 @@ This is accomplished in the startup scripts using infinite loops:
 				done
 				echo "Rebooting now!"
 			done
-			
+<</code>>
+
 On Windows, to exit this infinite loop (i.e., take the server down for good), simply close the
 command window. On Linux, stop the server then press "Ctrl+C" to cancel the process.
 
 == Permissions Nodes ==
-To use just about anything in the /restart or /reboot commands, users must have the permission "simplerestart.restart"
-To use the /restart time command, users must have the permission "simplerestart.time"
-To use the /memory command, users must have the permission "simplerestart.memory"
+* To use just about anything in the /restart or /reboot commands, users must have the permission "simplerestart.restart"
+* To use the /restart time command, users must have the permission "simplerestart.time"
+* To use the /memory command, users must have the permission "simplerestart.memory"
 
 == Commands ==
 (all commands may be typed in the console (without the "/" of course) or by players in-game)
@@ -109,6 +115,7 @@ To use the /memory command, users must have the permission "simplerestart.memory
 	* /memory: displays the java runtime memory usage, useful for catching runaway plugins
 	
 == Changelog ==
+    * 1.3.0 Moced to Bukkit v1.1
     * 1.2.0 Changed the scheduling system from Bukkit's internal scheduler (which gets delayed in the event of lag)
             to Java timers, which should be server lag-proof.
 	* 1.1.0 Added multiple warnings and tidied up code a bit
