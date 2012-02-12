@@ -18,10 +18,17 @@ import org.bukkit.configuration.file.FileConfiguration;
 import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
+import ru.tehkode.permissions.bukkit.PermissionsEx;
+import ru.tehkode.permissions.PermissionManager;
+
+import de.bananaco.bpermissions.api.WorldManager;
+
 public class SimpleRestart extends JavaPlugin {
 	// the basics
 	Logger log = Logger.getLogger("Minecraft");
-	public PermissionHandler permissionHandler;
+	public PermissionHandler permissions3;
+	public PermissionManager permissionsEx;
+	public WorldManager bpermissions;
 	
 	// keep track of ourself!
 	SimpleRestart plugin = this;
@@ -72,26 +79,43 @@ public class SimpleRestart extends JavaPlugin {
 	
 	// load the permissions plugin..
 	private void setupPermissions() {
-		Plugin permissionsPlugin = this.getServer().getPluginManager().getPlugin("Permissions");
-		
-		if(this.permissionHandler == null) {
-			if(permissionsPlugin != null) {
-				this.permissionHandler = ((Permissions)permissionsPlugin).getHandler();
-				log.info("[SimpleRestart] permissions successfully loaded");
-			} else {
-				log.info("[SimpleRestart] permission system not detected, defaulting to OP");
+		if (this.bpermissions == null) {
+			if (this.getServer().getPluginManager().isPluginEnabled("bPermissions")) {
+				this.bpermissions = WorldManager.getInstance();
+				log.info("[SimpleRestart] permissions (bPermissions-Plugin) successfully loaded");
+				return;
 			}
+		}
+		if (this.permissionsEx == null) {
+			if (this.getServer().getPluginManager().isPluginEnabled("PermissionsEx")) {
+				this.permissionsEx = PermissionsEx.getPermissionManager();
+				log.info("[SimpleRestart] permissions (PermissionsEx-Plugin) successfully loaded");
+				return;
+			}
+		}
+		if (this.permissions3 == null) {
+			Plugin permissions3Plugin = this.getServer().getPluginManager().getPlugin("Permissions");
+			if (permissions3Plugin != null) {
+				this.permissions3 = ((Permissions)permissions3Plugin).getHandler();
+				log.info("[SimpleRestart] permissions (Permissions-Plugin) successfully loaded");
+				return;
+			}
+		} else {
+			log.info("[SimpleRestart] permission system not detected, defaulting to OP");
 		}
 	}
 	
 	// just an interface function for checking permissions
 	// if permissions are down, default to OP status.
 	public boolean hasPermission(Player player, String permission) {
-		if(permissionHandler == null) {
+		if(permissions3 != null) {
+			return (permissions3.has(player, permission));
+		} else if (permissionsEx != null) {
+			return (permissionsEx.has(player, permission));
+		} else if (bpermissions != null) {
+			return player.hasPermission(permission);
+		} else {
 			return player.isOp();
-		}
-		else {
-			return (permissionHandler.has(player, permission));
 		}
 	}
 	
