@@ -10,6 +10,8 @@ Permissions.
 
 ## More ...
 More informations can be found on the following pages:
+
 * [SimpleRestart Code on GitHub](https://github.com/THExSYSTEM/SimpleRestart)
+* [SimpleRestart Builds on BukkitDev](http://dev.bukkit.org/server-mods/simple_restart/files/)
 * [SimpleRestart Project on BukkitDev](http://dev.bukkit.org/server-mods/simple_restart/)
 * [SimpleRestart Thread on BukkitForums](http://forums.bukkit.org/threads/24652/)
