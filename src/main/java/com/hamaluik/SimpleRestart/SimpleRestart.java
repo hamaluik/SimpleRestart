@@ -102,6 +102,7 @@ public class SimpleRestart extends JavaPlugin {
 			}
 		} else {
 			log.info("[SimpleRestart] permission system not detected, defaulting to OP");
+			return;
 		}
 	}
 	

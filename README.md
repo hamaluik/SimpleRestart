@@ -1,5 +1,5 @@
 # SimpleRestart
-Version 1.3.1 by FuzzyWuzzie and THExSYSTEM
+Version 1.3.2 by FuzzyWuzzie and THExSYSTEM
 
 ## Description
 SimpleRestart is a plugin for Bukkit (a Minecraft server wrapper) which allows
