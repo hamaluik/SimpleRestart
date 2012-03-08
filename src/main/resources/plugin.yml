@@ -7,7 +7,7 @@ authors:
 website: "http://dev.bukkit.org/server-mods/simple_restart/"
 database: false
 load: postworld
-softdepend: [Permissions]
+softdepend: [Permissions, bPermissions, PermissionsEx]
 commands:
    restart:
       description: restart the server!
