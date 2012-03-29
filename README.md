@@ -1,10 +1,10 @@
 # SimpleRestart
-Version 1.3.2 by FuzzyWuzzie and THExSYSTEM
+Version 1.3.3 by FuzzyWuzzie and THExSYSTEM
 
 ## Description
 SimpleRestart is a plugin for Bukkit (a Minecraft server wrapper) which allows
-server operators to simply and easily reboot their server, as well as schedule
-automatic reboots of the server "for freshness". The plugin contains flexible
+server operators to simply and easily restart their server, as well as schedule
+automatic restarts of the server "for freshness". The plugin contains flexible
 yet straightforward commands, is easy to set up and use, and makes use of
 Permissions.
 

@@ -58,7 +58,6 @@ public class SimpleRestart extends JavaPlugin {
 		this.setupPermissions();
 		this.loadConfiguration();
 		this.getCommand("restart").setExecutor(commandListener);
-		this.getCommand("reboot").setExecutor(commandListener);
 		this.getCommand("memory").setExecutor(commandListener);
 		log.info("[SimpleRestart] plugin enabled");
 		
@@ -138,7 +137,7 @@ public class SimpleRestart extends JavaPlugin {
 				out.write("\r\n");
 				out.write("# in hours (decimal points ok -- ex: 2.5)\r\n");
 				out.write("# must be > (warn-time / 60)\r\n");
-				out.write("auto-restart-interval: 4\r\n");
+				out.write("auto-restart-interval: 24\r\n");
 				out.write("\r\n");
 				out.write("# warning times before reboot in minutes (decimal points ok -- ex: 2.5)\r\n");
 				out.write("warn-times: [10, 5, 2, 1]\r\n");
