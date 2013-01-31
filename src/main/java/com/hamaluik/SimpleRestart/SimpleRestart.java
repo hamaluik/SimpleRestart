@@ -3,8 +3,6 @@ package com.hamaluik.SimpleRestart;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-//import java.lang.management.ManagementFactory;
-//import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -12,19 +10,25 @@ import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
+import ru.tehkode.permissions.bukkit.PermissionsEx;
+import ru.tehkode.permissions.PermissionManager;
+
+import de.bananaco.bpermissions.api.WorldManager;
+
 public class SimpleRestart extends JavaPlugin {
 	// the basics
 	Logger log = Logger.getLogger("Minecraft");
-	public PermissionHandler permissionHandler;
+	public PermissionHandler permissions3;
+	public PermissionManager permissionsEx;
+	public WorldManager bpermissions;
 	
 	// keep track of ourself!
 	SimpleRestart plugin = this;
@@ -54,7 +58,6 @@ public class SimpleRestart extends JavaPlugin {
 		this.setupPermissions();
 		this.loadConfiguration();
 		this.getCommand("restart").setExecutor(commandListener);
-		this.getCommand("reboot").setExecutor(commandListener);
 		this.getCommand("memory").setExecutor(commandListener);
 		log.info("[SimpleRestart] plugin enabled");
 		
@@ -75,26 +78,44 @@ public class SimpleRestart extends JavaPlugin {
 	
 	// load the permissions plugin..
 	private void setupPermissions() {
-		Plugin permissionsPlugin = this.getServer().getPluginManager().getPlugin("Permissions");
-		
-		if(this.permissionHandler == null) {
-			if(permissionsPlugin != null) {
-				this.permissionHandler = ((Permissions)permissionsPlugin).getHandler();
-				log.info("[MCNSAChat] permissions successfully loaded");
-			} else {
-				log.info("[MCNSAChat] permission system not detected, defaulting to OP");
+		if (this.bpermissions == null) {
+			if (this.getServer().getPluginManager().isPluginEnabled("bPermissions")) {
+				this.bpermissions = WorldManager.getInstance();
+				log.info("[SimpleRestart] permissions (bPermissions-Plugin) successfully loaded");
+				return;
 			}
+		}
+		if (this.permissionsEx == null) {
+			if (this.getServer().getPluginManager().isPluginEnabled("PermissionsEx")) {
+				this.permissionsEx = PermissionsEx.getPermissionManager();
+				log.info("[SimpleRestart] permissions (PermissionsEx-Plugin) successfully loaded");
+				return;
+			}
+		}
+		if (this.permissions3 == null) {
+			Plugin permissions3Plugin = this.getServer().getPluginManager().getPlugin("Permissions");
+			if (permissions3Plugin != null) {
+				this.permissions3 = ((Permissions)permissions3Plugin).getHandler();
+				log.info("[SimpleRestart] permissions (Permissions-Plugin) successfully loaded");
+				return;
+			}
+		} else {
+			log.info("[SimpleRestart] permission system not detected, defaulting to OP");
+			return;
 		}
 	}
 	
 	// just an interface function for checking permissions
 	// if permissions are down, default to OP status.
 	public boolean hasPermission(Player player, String permission) {
-		if(permissionHandler == null) {
+		if(permissions3 != null) {
+			return (permissions3.has(player, permission));
+		} else if (permissionsEx != null) {
+			return (permissionsEx.has(player, permission));
+		} else if (bpermissions != null) {
+			return player.hasPermission(permission);
+		} else {
 			return player.isOp();
-		}
-		else {
-			return (permissionHandler.has(player, permission));
 		}
 	}
 	
@@ -116,7 +137,7 @@ public class SimpleRestart extends JavaPlugin {
 				out.write("\r\n");
 				out.write("# in hours (decimal points ok -- ex: 2.5)\r\n");
 				out.write("# must be > (warn-time / 60)\r\n");
-				out.write("auto-restart-interval: 4\r\n");
+				out.write("auto-restart-interval: 24\r\n");
 				out.write("\r\n");
 				out.write("# warning times before reboot in minutes (decimal points ok -- ex: 2.5)\r\n");
 				out.write("warn-times: [10, 5, 2, 1]\r\n");
@@ -143,10 +164,10 @@ public class SimpleRestart extends JavaPlugin {
 		this.checkConfiguration();
 		
 		// ge the configuration..
-		Configuration config = getConfiguration();
+		FileConfiguration config = getConfig();
 		this.autoRestart = config.getBoolean("auto-restart", true);
 		this.restartInterval = config.getDouble("auto-restart-interval", 8);
-		this.warnTimes = config.getDoubleList("warn-times", null);
+		this.warnTimes = config.getDoubleList("warn-times");
 		this.warningMessage = config.getString("warning-message", "&cServer will be restarting in %t minutes!");
 		this.restartMessage = config.getString("restart-message", "&cServer is restarting, we'll be right back!");
 	}
@@ -248,24 +269,22 @@ public class SimpleRestart extends JavaPlugin {
 		log.info("[SimpleRestart] Restarting...");
 		clearServer();
 		try {
-            /*Field f;
-			f = CraftServer.class.getDeclaredField("console");
-            f.setAccessible(true);
-            MinecraftServer ms = (MinecraftServer) f.get(this.getServer());
-            // send the "stop" command as the console
-            this.getServer().dispatchCommand(ms.console, "save-all");
-            this.getServer().dispatchCommand(ms.console, "stop");*/
-            ConsoleCommandSender sender = new ConsoleCommandSender(this.getServer());
-            this.getServer().dispatchCommand(sender, "save-all");
-            this.getServer().dispatchCommand(sender, "stop");
-            
-            // GET PID OF CURRENT JAVA PROCESS
-            //String PID = ManagementFactory.getRuntimeMXBean().getName();
-            // ASYNCHRONOUSLY LAUNCH EXTERNAL PROCESS
-            //java.lang.Runtime.getRuntime().exec("sh /home/mcnsa/restart.sh " + PID.split("@")[0]);
-            
+			File file = new File(this.getDataFolder().getAbsolutePath() + File.separator + "restart.txt");
+			log.info("[SimpleRestart] Touching restart.txt at: " + file.getAbsolutePath());
+			if (file.exists()) {
+				file.setLastModified(System.currentTimeMillis());
+			} else {
+				file.createNewFile();
+			}
 		} catch (Exception e) {
-			log.info("[SimpleRestart] Something went wrong!");
+			log.info("[SimpleRestart] Something went wrong while touching restart.txt!");
+			return false;
+		}
+		try {
+            this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "save-all");
+            this.getServer().dispatchCommand(this.getServer().getConsoleSender(), "stop");
+		} catch (Exception e) {
+			log.info("[SimpleRestart] Something went wrong while saving & stoping!");
 			return false;
 		}
 		return true;

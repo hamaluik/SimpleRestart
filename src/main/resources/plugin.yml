@@ -1,8 +1,13 @@
 name: SimpleRestart
 main: com.hamaluik.SimpleRestart.SimpleRestart
-version: 1.2.0
-author: FuzzyWuzzie
-softdepend: [Permissions]
+version: 1.3.4
+authors:
+  - "FuzzyWuzzie"
+  - "THExSYSTEM"
+website: "http://dev.bukkit.org/server-mods/simple_restart/"
+database: false
+load: postworld
+softdepend: [Permissions, bPermissions, PermissionsEx, PermissionsBukkit]
 commands:
    restart:
       description: restart the server!
